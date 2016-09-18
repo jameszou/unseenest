@@ -7,8 +7,8 @@ UnseenEst is an algorithm that estimates the frequency distribution of genetic v
 UnseenEst is written in Python and uses the module [cxvopt](http://cvxopt.org/). 
 
 Inputs:
--The empirical site-frequency spectrum (SFS). This should be a text file where the 1st row contains the number of variants observed once in the dataset (i.e. found in one individual) and the ith row is the number of variants observed i times in the dataset (found in i individuals). 
--The total number of alleles in the dataset. This should be the number of sequenced individuals times 2. 
+*The empirical site-frequency spectrum (SFS). This should be a text file where the 1st row contains the number of variants observed once in the dataset (i.e. found in one individual) and the ith row is the number of variants observed i times in the dataset (found in i individuals). 
+*The total number of alleles in the dataset. This should be the number of sequenced individuals times 2. 
 
 Outputs:
 -UnseenEst outputs a text file with two columns. The first column indicates the frequency bin and the second column indicates the number of variants with population frequency in that bin. 
