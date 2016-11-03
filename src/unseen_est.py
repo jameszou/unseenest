@@ -29,10 +29,10 @@ def unseen_est(filename, n_samples):
     ########### BASIC CONSTANTS ###################
     gridFactor = 1.05
     maxLPIters = 1000
+    low_percentage_bound = 15
     xLPmax = len(f)/n_samples
-    xLPmin = 1./(n_samples*100)
+    xLPmin = low_percentage_bound*1./(n_samples*100)
     N_max = 65000000
-    #N_max = 650000000
     
     ########### SETTING UP THE LP ###################
     fLP = f + [0]*int(np.ceil(np.sqrt(len(f))))
@@ -74,6 +74,7 @@ def unseen_est(filename, n_samples):
     Aeq = np.zeros((1, szLPx+2*szLPf))
     Aeq[0, range(szLPx)] = xLP
     beq = np.sum(np.array(f)*(1+np.arange(len(f))))/n_samples
+    print(np.sum(np.array(f)*(1+np.arange(len(f)))),n_samples)
     
     ########### RUNNING THE LP ###################
     
