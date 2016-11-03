@@ -4,6 +4,7 @@ try:
     import cPickle
 except ImportError:
     import pickle as cPickle
+import argparse
 import numpy as np
 from operator import itemgetter
 from scipy.stats import binom_test
@@ -20,19 +21,16 @@ from cvxopt import matrix, solvers
 
 # f is a list of fingerprint values
 # n_samples is the number of alleles in the cohort
-def unseen_est(filename, n_samples):
+def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max):
     file = open(filename,'r')
     f = []
     for line in file:
         f.append(int(line.strip()))
     
     ########### BASIC CONSTANTS ###################
-    gridFactor = 1.05
     maxLPIters = 1000
-    low_percentage_bound = 15
     xLPmax = len(f)/n_samples
     xLPmin = low_percentage_bound*1./(n_samples*100)
-    N_max = 65000000
     
     ########### SETTING UP THE LP ###################
     fLP = f + [0]*int(np.ceil(np.sqrt(len(f))))
@@ -75,7 +73,6 @@ def unseen_est(filename, n_samples):
     Aeq[0, range(szLPx)] = xLP
     beq = np.sum(np.array(f)*(1+np.arange(len(f))))/n_samples
     print(np.sum(np.array(f)*(1+np.arange(len(f)))),n_samples)
-    
     ########### RUNNING THE LP ###################
     
     solvers.options['show_progress'] = False
@@ -103,8 +100,23 @@ def write_output(histx, xLP, outname):
     out.close()
     
 if __name__ == '__main__':
-    filename = sys.argv[1]
-    n_alleles = int(sys.argv[2])
-    outname = sys.argv[3]
-    histx, xLP = unseen_est(filename, n_alleles)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('filename', help='Input file name, read the README for the correct format.')
+    parser.add_argument("alleles_numbers", help="k - The total number of alleles in the dataset. This should be the number of sequenced individuals times 2",
+                    type=int)
+    parser.add_argument('outname', help='Output file name, read the README for the correct format.')
+    parser.add_argument("-g", "--gridFactor", help="How thin should the grid be",
+                    type=float, default=1.05)
+    parser.add_argument("-l", "--low_percentage_bound", help="The percentage below which a frequency should be considered low",
+                    type=float, default=1)
+    parser.add_argument("-n", "--N_max", help="The maximum variants number",
+                    type=int, default=65000000)
+    args = parser.parse_args()
+    filename = args.filename
+    n_alleles = args.alleles_numbers
+    outname = args.outname
+    gridFactor = args.gridFactor
+    low_percentage_bound = args.low_percentage_bound
+    N_max = args.N_max
+    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max)
     write_output(histx, xLP, outname)
