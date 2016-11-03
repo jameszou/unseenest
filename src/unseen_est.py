@@ -1,5 +1,9 @@
 from __future__ import division
-import os, sys, random, cPickle, sets, subprocess, pandas, gzip, math, itertools
+import os, sys, random, subprocess, pandas, gzip, math, itertools
+try:
+    import cPickle
+except ImportError:
+    import pickle as cPickle
 import numpy as np
 from operator import itemgetter
 from scipy.stats import binom_test
@@ -103,8 +107,3 @@ if __name__ == '__main__':
     outname = sys.argv[3]
     histx, xLP = unseen_est(filename, n_alleles)
     write_output(histx, xLP, outname)
-
-
-
-    
-    
