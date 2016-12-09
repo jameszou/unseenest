@@ -94,11 +94,12 @@ def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max, sam
     
     return np.array(histx), xLP
 
-def write_output(histx, xLP, outname):
+def write_output(histx, xLP, outname, discrete=False, low_percentage_bound = 0.01):
     out = open(outname, 'w')
     out.write('\t'.join(['frequency', '# of variants'])+'\n')
     for i in range(len(xLP)):
-        out.write('\t'.join([str(xLP[i]), str(histx[i,0])])+'\n')
+        if not discrete or histx[i,0] >= low_percentage_bound:
+            out.write('\t'.join([str(xLP[i]), str(histx[i,0])])+'\n')
     out.close()
     
 if __name__ == '__main__':
@@ -116,8 +117,7 @@ if __name__ == '__main__':
                     type=int, default=65000000)
     parser.add_argument("-s", "--samples_allelle_ratio", help="Replace alleles_numbers by a ratio between samples and alleles",
                     type=float, default=0)
-    parser.add_argument("-d", "--discrete", help="should only output numbers higher than low_percentage_bound", action=store_true
-                    type=float)
+    parser.add_argument("-d", "--discrete", help="should only output numbers higher than low_percentage_bound", action="store_true")
     args = parser.parse_args()
     filename = args.filename
     n_alleles = args.alleles_numbers
@@ -127,5 +127,5 @@ if __name__ == '__main__':
     N_max = args.N_max
     samples_allelle_ratio = args.samples_allelle_ratio
     discrete = args.discrete
-    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio, discrete)
-    write_output(histx, xLP, outname)
+    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio)
+    write_output(histx, xLP, outname, discrete, low_percentage_bound)
