@@ -21,13 +21,15 @@ from cvxopt import matrix, solvers
 
 # f is a list of fingerprint values
 # n_samples is the number of alleles in the cohort
-def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max):
+def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio):
     file = open(filename,'r')
     f = []
     for line in file:
         f.append(int(line.strip()))
     
     ########### BASIC CONSTANTS ###################
+    if samples_allelle_ratio:
+        n_samples = np.sum(np.array(f)*(1+np.arange(len(f)))) * samples_allelle_ratio
     maxLPIters = 1000
     xLPmax = len(f)/n_samples
     xLPmin = low_percentage_bound*1./(n_samples*100)
@@ -100,6 +102,7 @@ def write_output(histx, xLP, outname):
     out.close()
     
 if __name__ == '__main__':
+    # python3 unseen_est.py testing_input.txt 4 tesint_output.txt -l 50 -s 1
     parser = argparse.ArgumentParser()
     parser.add_argument('filename', help='Input file name, read the README for the correct format.')
     parser.add_argument("alleles_numbers", help="k - The total number of alleles in the dataset. This should be the number of sequenced individuals times 2",
@@ -111,6 +114,10 @@ if __name__ == '__main__':
                     type=float, default=1)
     parser.add_argument("-n", "--N_max", help="The maximum variants number",
                     type=int, default=65000000)
+    parser.add_argument("-s", "--samples_allelle_ratio", help="Replace alleles_numbers by a ratio between samples and alleles",
+                    type=float, default=0)
+    parser.add_argument("-d", "--discrete", help="should only output numbers higher than low_percentage_bound", action=store_true
+                    type=float)
     args = parser.parse_args()
     filename = args.filename
     n_alleles = args.alleles_numbers
@@ -118,5 +125,7 @@ if __name__ == '__main__':
     gridFactor = args.gridFactor
     low_percentage_bound = args.low_percentage_bound
     N_max = args.N_max
-    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max)
+    samples_allelle_ratio = args.samples_allelle_ratio
+    discrete = args.discrete
+    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio, discrete)
     write_output(histx, xLP, outname)
