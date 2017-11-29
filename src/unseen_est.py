@@ -21,7 +21,7 @@ from cvxopt import matrix, solvers
 
 # f is a list of fingerprint values
 # n_samples is the number of alleles in the cohort
-def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio):
+def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio, min_frequency):
     file = open(filename,'r')
     f = []
     for line in file:
@@ -92,13 +92,28 @@ def unseen_est(filename, n_samples, gridFactor, low_percentage_bound, N_max, sam
     histx = np.array(sol['x'])[0:szLPx]
     histx = [histx[i]/xLP[i] for i in range(szLPx)]
     
+    # # combine mass from small amounts in the hist to the closest ones
+    # if min:
+    #     Dhist = []
+    #     DLP = []
+    #     for i, val in enumerate(histx):
+    #         if val >= low_percentage_bound:
+    #             Dhist.append(val)
+    #             DLP.append(xLP[i])
+    #     Dhist = np.array(Dhist)
+    #     DLP = np.array(DLP)
+    #     for i in range(len(xLP)):
+    #         if histx[i] < low_percentage_bound:
+    #             idx = np.abs(DLP - xLP[i]).argmin()
+    #             Dhist[idx] += histx[i]*xLP[i]/DLP[idx]
+    #     histx = Dhist
+    #     xLP = DLP
     return np.array(histx), xLP
 
-def write_output(histx, xLP, outname, discrete=False, low_percentage_bound = 0.01):
+def write_output(histx, xLP, outname):
     out = open(outname, 'w')
     out.write('\t'.join(['frequency', '# of variants'])+'\n')
     for i in range(len(xLP)):
-        if not discrete or histx[i,0] >= low_percentage_bound:
             out.write('\t'.join([str(xLP[i]), str(histx[i,0])])+'\n')
     out.close()
     
@@ -117,7 +132,9 @@ if __name__ == '__main__':
                     type=int, default=65000000)
     parser.add_argument("-s", "--samples_allelle_ratio", help="Replace alleles_numbers by a ratio between samples and alleles",
                     type=float, default=0)
-    parser.add_argument("-d", "--discrete", help="should only output numbers higher than low_percentage_bound", action="store_true")
+    parser.add_argument("-f", "--minFrequency", help="What is the minimum frequency interesting",
+                    type=float, default=0)
+    
     args = parser.parse_args()
     filename = args.filename
     n_alleles = args.alleles_numbers
@@ -126,6 +143,6 @@ if __name__ == '__main__':
     low_percentage_bound = args.low_percentage_bound
     N_max = args.N_max
     samples_allelle_ratio = args.samples_allelle_ratio
-    discrete = args.discrete
-    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio)
-    write_output(histx, xLP, outname, discrete, low_percentage_bound)
+    minFrequency = args.minFrequency
+    histx, xLP = unseen_est(filename, n_alleles, gridFactor, low_percentage_bound, N_max, samples_allelle_ratio, minFrequency)
+    write_output(histx, xLP, outname)
